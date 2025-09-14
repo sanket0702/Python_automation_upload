@@ -1,0 +1,13 @@
+{
+  "name": "python-auto-updation",
+  "version": "1.0.0",
+  "main": "FetchNewSongAndUpload.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "description": ""
+}

@@ -1,0 +1,8 @@
+node_modules/
+output/
+Downloaded_Songs/
+data/
+.env
+
+
+spotdl_env/
