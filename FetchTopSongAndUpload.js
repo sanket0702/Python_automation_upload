@@ -49,7 +49,7 @@ export async function fetchAndUpload() {
     
 
     // Step 3: Upload songs into DB
-    await uploadAllSongs();
+    //await uploadAllSongs();
 
     console.log(`[INFO] 🎉 Completed pipeline successfully`);
   } catch (err) {
