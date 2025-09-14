@@ -61,9 +61,7 @@ def download_mp3(song, album=None):
     safe_title = sanitize_filename(fallback_title)
     safe_artist = sanitize_filename(fallback_artist)
 
-    if DRY_RUN:
-        print(f"[DRY RUN] Title: {fallback_title}, Artist: {fallback_artist}, Date: {publishdate}, URL: {url}")
-        return
+    
     
     filename = f"{safe_title} - {safe_artist}.mp3"
     filepath = os.path.join(DOWNLOAD_FOLDER, filename)
