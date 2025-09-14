@@ -33,5 +33,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install spotipy mutagen requests ytmusicapi yt-dlp
 
+      - name: Add YouTube cookies
+        run: echo "${{ secrets.YT_COOKIES }}" > cookies.txt
+
+      - name: Create download folder
+        run: mkdir -p Download_Songs
+
       - name: Run fetch and upload
         run: node FetchTopSongAndUpload.js
