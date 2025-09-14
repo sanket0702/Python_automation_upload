@@ -1,0 +1,37 @@
+name: Fetch and Upload Songs
+
+on:
+  workflow_dispatch:   # manual trigger
+  schedule:
+    # Runs daily at 9:00 PM IST → 3:30 PM UTC
+    - cron: "30 6 * * *"
+
+jobs:
+  fetch_Top_and_upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install Node.js dependencies
+        run: npm install
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install spotipy mutagen requests ytmusicapi
+
+      - name: Run fetch and upload
+        run: node FetchTopSongAndUpload.js
