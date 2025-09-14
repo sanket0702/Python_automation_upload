@@ -31,7 +31,7 @@ def download_mp3(song, album=None):
 
     # Fallback metadata from JSON
     fallback_title = song.get("title", "Unknown Title")
-    fallback_artist = song.get("videoDetails", {}).get("author", "Unknown Artist")
+    fallback_artist = song.get("artist", "Unknown Artist")
     tags = song.get("tags") or []
     publishdate = song.get("publishDate") or song.get("videoDetails", {}).get("publishDate")
 
