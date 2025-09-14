@@ -14,27 +14,6 @@ DOWNLOAD_FOLDER = "Download_Songs"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 
-def validate_json():
-    json_files = [f for f in os.listdir(DATA_FOLDER) if f.endswith(".json")]
-    for file in json_files:
-        path = os.path.join(DATA_FOLDER, file)
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                songs = json.load(f)
-        except Exception as e:
-            print(f"[ERROR] Failed to load {file}: {e}")
-            continue
-
-        for idx, song in enumerate(songs):
-            if not isinstance(song, dict):
-                print(f"[ERROR] Invalid song entry at index {idx} in {file}")
-            if not song.get("urlCanonical") and not song.get("videoId"):
-                print(f"[WARN] No URL or videoId for song at index {idx} in {file}")
-            if not song.get("title"):
-                print(f"[WARN] Missing title at index {idx} in {file}")
-            if not song.get("artist") and not (song.get("videoDetails") or {}).get("author"):
-                print(f"[WARN] Missing artist at index {idx} in {file}")
-
 def sanitize_filename(name):
     return "".join(c for c in name if c.isalnum() or c in " ._-").rstrip()
 
@@ -66,20 +45,18 @@ def download_mp3(song, album=None):
         print(f"[SKIP] {filename} already exists")
         return
 
-    
     ydl_opts = {
-    "format": "bestaudio/best",
-    "outtmpl": filepath.replace(".mp3", ".%(ext)s"),
-    "postprocessors": [{
-        "key": "FFmpegExtractAudio",
-        "preferredcodec": "mp3",
-        "preferredquality": "192",
-    }],
-    "quiet": False,
-    "no_warnings": True,
-    "cookiefile": "cookies.txt"  # <-- add this line
-}
-
+        "format": "bestaudio/best",
+        # create a temporary file with the same name but proper extension replacement
+        "outtmpl": filepath.replace(".mp3", ".%(ext)s"),
+        "postprocessors": [{
+            "key": "FFmpegExtractAudio",
+            "preferredcodec": "mp3",
+            "preferredquality": "192",
+        }],
+        "quiet": False,
+        "no_warnings": True,
+    }
 
     try:
         with YoutubeDL(ydl_opts) as ydl:
@@ -167,6 +144,7 @@ def main():
 
 
 if __name__ == "__main__":
-
-    
     main()
+
+
+
