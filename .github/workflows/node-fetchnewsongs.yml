@@ -1,4 +1,4 @@
-name: Fetch and Upload Songs
+name: Fetch new released and Upload Songs
 
 on:
   workflow_dispatch:   # manual trigger
