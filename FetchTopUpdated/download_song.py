@@ -33,7 +33,7 @@ def download_mp3(song, album=None):
     fallback_title = song.get("title", "Unknown Title")
     fallback_artist = song.get("artist", "Unknown Artist")
     tags = song.get("tags") or []
-    publishdate = song.get("publishDate") or song.get("videoDetails", {}).get("publishDate")
+    publishdate = song.get("publishDate") 
 
     # Build safe target path (we will instruct yt_dlp to create final mp3 at this exact path)
     safe_title = sanitize_filename(fallback_title)
