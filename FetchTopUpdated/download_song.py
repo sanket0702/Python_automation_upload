@@ -62,6 +62,7 @@ def download_mp3(song, album=None):
 
         artist=info.get("artist") or fallback_artist
         # Rename file to sanitized version
+        publishDate= info.get("microformat", {}).get("microformatDataRenderer", {}).get("publishDate"),
         if os.path.exists(filepath):
             os.rename(filepath, safe_filepath)
         filepath = safe_filepath
