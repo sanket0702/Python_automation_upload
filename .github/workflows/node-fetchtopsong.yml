@@ -4,7 +4,7 @@ on:
   workflow_dispatch:   # manual trigger
   schedule:
     # Runs daily at 9:00 PM IST → 3:30 PM UTC
-    - cron: "*/5 * * * *"
+    - cron: "30 10 * * *"  # Runs every day at 10:30 UTC (4:00 PM IST)
 
 jobs:
   fetch_Top_and_upload:
