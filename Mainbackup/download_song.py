@@ -58,13 +58,13 @@ def download_mp3(song, album=None):
         "quiet": False,
         "no_warnings": True,
     }
-    songdata=[]
+
     try:
         with YoutubeDL(ydl_opts) as ydl:
-            songdata = ydl.extract_info(url, download=True)
+            info = ydl.extract_info(url, download=True)
 
         # File path that yt-dlp created (by video ID)
-        temp_filepath = os.path.join(DOWNLOAD_FOLDER, f"{songdata['id']}.mp3")
+        temp_filepath = os.path.join(DOWNLOAD_FOLDER, f"{info['id']}.mp3")
 
         # Final safe filename
         safe_title = sanitize_filename(title)
