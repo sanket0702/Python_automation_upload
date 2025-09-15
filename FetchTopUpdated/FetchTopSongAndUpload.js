@@ -1,6 +1,6 @@
 import path from "path";
 import { spawn } from "child_process";
-import uploadAllSongs from "./SongUploadingAutomation.js";
+import uploadAllSongs from "../SongUploadingAutomation.js";
 import { fileURLToPath } from "url";
 
 // ✅ Resolve __dirname in ESM
@@ -40,12 +40,12 @@ export async function fetchAndUpload() {
     console.log(`[INFO] 🚀 Starting Fetch + Upload pipeline`);
 
     // Step 1: Run Python script 1
-    await runPython(path.join(__dirname, "./yt_trending.py"));
+    await runPython(path.join(__dirname, "../yt_trending.py"));
 
  
 
     // Step 2: Run Python script 2
-    await runPython(path.join(__dirname, "./download_song.py"));
+    await runPython(path.join(__dirname, "../download_song.py"));
     
 
     // Step 3: Upload songs into DB

@@ -14,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ✅ Use decoded and normalized path
-const DOWNLOAD_DIR = path.normalize(path.join(__dirname, "Download_songs"));
+const DOWNLOAD_DIR = path.normalize(path.join(__dirname, "Download_Songs"));
 
 // ===== LOGIN FUNCTION =====
 async function loginAdmin() {
