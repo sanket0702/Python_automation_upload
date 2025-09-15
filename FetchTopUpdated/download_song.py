@@ -44,13 +44,15 @@ def download_mp3(song, album=None):
         return
 
     ydl_opts = {
-        "format": "bestaudio/best",
-        "outtmpl": filepath.replace(".mp3", ".%(ext)s"),
-        "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": "192"}],
-        "quiet": False,
-        "no_warnings": True,
-        "cookiefile": "cookies.txt"  # GitHub secret cookie file
-    }
+    "format": "bestaudio/best",
+    "outtmpl": os.path.join(DOWNLOAD_FOLDER, "%(title)s.%(ext)s"),
+    "postprocessors": [
+        {"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": "192"}
+    ],
+    "cookiefile": "cookies.txt",  # must be Netscape format
+    "quiet": False,
+    "no_warnings": True,
+}
 
     try:
         with YoutubeDL(ydl_opts) as ydl:
@@ -84,7 +86,7 @@ def download_mp3(song, album=None):
             id3.add(TKEY(encoding=3, text=video_id))
             id3.save(v2_version=3)
 
-            
+
         print(f"✅ Downloaded & tagged: {filename} | Title: {title} | Artist: {artist}")
 
     except Exception as e:
