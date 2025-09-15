@@ -36,10 +36,10 @@ jobs:
       - name: Create cookies.txt
         run: echo "${{ secrets.YTM_COOKIES }}" > cookies.txt
 
-      
+
 
       - name: Create download folder
         run: mkdir -p Download_Songs
 
       - name: Run fetch and upload
-        run: node FetchTopUpdated/FetchTopSongAndUpload.js
+        run: node FetchTopSongAndUpload.js
