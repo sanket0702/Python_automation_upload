@@ -46,7 +46,7 @@ async function uploadSong(filePath, token) {
   form.append("audio", fs.createReadStream(filePath), safeName);
 
   try {
-    const res = await axios.post(`${API_BASE}/admin/upload-automated-python`, form, {
+    const res = await axios.post(`${API_BASE}/admin/upload-automated-python-yt`, form, {
       headers: {
         Authorization: `Bearer ${token}`,
         ...form.getHeaders(),

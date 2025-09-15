@@ -5,6 +5,7 @@ from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3, ID3NoHeaderError
 import sys
 import io
+from mutagen.id3 import ID3, ID3NoHeaderError, TKEY
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
@@ -30,6 +31,8 @@ def download_mp3(song, album=None):
     fallback_artist = song.get("artist") or "Unknown Artist"
     tags = song.get("tags") or []
     publishdate = song.get("publishDate")
+    video_id = song.get("videoId")  # ✅ Grab videoId
+
 
     safe_title = sanitize_filename(fallback_title)
     safe_artist = sanitize_filename(fallback_artist)
@@ -75,6 +78,13 @@ def download_mp3(song, album=None):
             audio["date"] = date_no_dash
 
         audio.save(v2_version=3)
+
+        if video_id:
+            id3 = ID3(filepath)
+            id3.add(TKEY(encoding=3, text=video_id))
+            id3.save(v2_version=3)
+
+            
         print(f"✅ Downloaded & tagged: {filename} | Title: {title} | Artist: {artist}")
 
     except Exception as e:
