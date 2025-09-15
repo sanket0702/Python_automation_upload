@@ -35,35 +35,40 @@ def fetch_playlist_full_metadata(playlist_id):
             print(f"[ERROR] Failed to fetch metadata for {videoId}: {e}", file=sys.stderr)
             continue
 
+        thumbnails = metadata.get("microformat", {}).get("microformatDataRenderer", {}).get("thumbnail", {}).get("thumbnails", [])
+        coverUrl = thumbnails[0]["url"] if thumbnails else None
+
+        pub_date_str = metadata.get("microformat", {}).get("microformatDataRenderer", {}).get("publishDate")
+        
+
         # Extract essential fields
         song_data = {
-            "videoId": videoId,
-
+           "videoId": videoId,
             "title": metadata.get("videoDetails", {}).get("title"),
             "artist": metadata.get("videoDetails", {}).get("author"),
-            "coverUrl": metadata.get("microformat", {}).get("microformatDataRenderer", {}).get("thumbnail",{}).get("thumbnails",{}),
-            "coverUrl": metadata.get("microformat", {}).get("microformatDataRenderer", {}).get("thumbnail",{}).get("thumbnails",{}),
+            "coverUrl": coverUrl,
             "description": metadata.get("microformat", {}).get("microformatDataRenderer", {}).get("tags"),
             "urlCanonical": metadata.get("videoDetails", {}).get("video_url"),
             "viewCount": metadata.get("videoDetails", {}).get("viewCount"),
-            "publishDate": metadata.get("microformat", {}).get("microformatDataRenderer", {}).get("publishDate"),
+            "publishDate": pub_date_str,
             "category": metadata.get("videoDetails", {}).get("category"),
             "tags": metadata.get("microformat", {}).get("microformatDataRenderer", {}).get("tags"),
-            "streamingData": metadata.get("streamingData"),
-            "playabilityStatus": metadata.get("playabilityStatus"),
-            "videoDetails": metadata.get("videoDetails"),
-            "microformat": metadata.get("microformat"),
-            "siteName": "YouTube Music",
-            "appName": "YouTube Music",
-            "androidPackage": "com.google.android.apps.youtube.music",
-            "iosAppStoreId": "1017492454",
-            "urls": {
-                "iosAppArguments": f"https://music.youtube.com/watch?v={videoId}",
-                "urlApplinksIos": f"vnd.youtube.music://music.youtube.com/watch?v={videoId}&feature=applinks",
-                "urlApplinksAndroid": f"vnd.youtube.music://music.youtube.com/watch?v={videoId}&feature=applinks",
-                "urlTwitterIos": f"vnd.youtube.music://music.youtube.com/watch?v={videoId}&feature=twitter-deep-link",
-                "urlTwitterAndroid": f"vnd.youtube.music://music.youtube.com/watch?v={videoId}&feature=twitter-deep-link",
-            }
+
+            #"streamingData": metadata.get("streamingData"),
+            #"playabilityStatus": metadata.get("playabilityStatus"),
+            #"videoDetails": metadata.get("videoDetails"),
+            #"microformat": metadata.get("microformat"),
+            #"siteName": "YouTube Music",
+            #"appName": "YouTube Music",
+            #"androidPackage": "com.google.android.apps.youtube.music",
+            #"iosAppStoreId": "1017492454",
+            #"urls": {
+                #"iosAppArguments": f"https://music.youtube.com/watch?v={videoId}",
+                #"urlApplinksIos": f"vnd.youtube.music://music.youtube.com/watch?v={videoId}&feature=applinks",
+                #"urlApplinksAndroid": f"vnd.youtube.music://music.youtube.com/watch?v={videoId}&feature=applinks",
+                #"urlTwitterIos": f"vnd.youtube.music://music.youtube.com/watch?v={videoId}&feature=twitter-deep-link",
+                #"urlTwitterAndroid": f"vnd.youtube.music://music.youtube.com/watch?v={videoId}&feature=twitter-deep-link",
+           # }
         }
 
         all_songs_data.append(song_data)
