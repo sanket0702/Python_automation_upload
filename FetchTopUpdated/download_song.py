@@ -80,7 +80,7 @@ def download_mp3(song, album=None):
         if publishdate:
             date_only = publishdate.split("T")[0]
             audio["date"] = date_only.replace("-", "")
-        audio.save(v2_version=3)
+            audio.save(v2_version=3)
 
         # Add videoId as TKEY
         if video_id:
