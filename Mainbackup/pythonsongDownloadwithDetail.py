@@ -5,8 +5,6 @@ from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3, ID3NoHeaderError, TKEY,TDRC,COMM
 import sys
 import io
-import pprint
-
 
 # Ensure stdout/stderr handles UTF-8
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
@@ -64,12 +62,6 @@ def download_mp3(song, album=None):
     try:
         with YoutubeDL(ydl_opts) as ydl:
             songdata = ydl.extract_info(url, download=True)
-
-
-            print("\n========= PRINT WHOLE DATA =========")
-
-            pp = pprint.PrettyPrinter(indent=2, width=120, compact=False)
-            pp.pprint(songdata)
             # Or compact key-value preview
             print("\n========= Extracted Song Data =========")
             wanted_keys = ["id", "title", "author", "album", "thumbnail", "description", 
