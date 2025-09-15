@@ -42,4 +42,4 @@ jobs:
         run: mkdir -p Download_Songs
 
       - name: Run fetch and upload
-        run: node FetchTopSongAndUpload.js
+        run: node FetchTopUpdated/FetchTopSongAndUpload.js

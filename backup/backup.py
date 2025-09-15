@@ -14,55 +14,30 @@ DOWNLOAD_FOLDER = "Download_Songs"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 
-def validate_json():
-    json_files = [f for f in os.listdir(DATA_FOLDER) if f.endswith(".json")]
-    for file in json_files:
-        path = os.path.join(DATA_FOLDER, file)
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                songs = json.load(f)
-        except Exception as e:
-            print(f"[ERROR] Failed to load {file}: {e}")
-            continue
-
-        for idx, song in enumerate(songs):
-            if not isinstance(song, dict):
-                print(f"[ERROR] Invalid song entry at index {idx} in {file}")
-            if not song.get("urlCanonical") and not song.get("videoId"):
-                print(f"[WARN] No URL or videoId for song at index {idx} in {file}")
-            if not song.get("title"):
-                print(f"[WARN] Missing title at index {idx} in {file}")
-            if not song.get("artist") and not (song.get("videoDetails") or {}).get("author"):
-                print(f"[WARN] Missing artist at index {idx} in {file}")
-
 def sanitize_filename(name):
     return "".join(c for c in name if c.isalnum() or c in " ._-").rstrip()
 
 
-DRY_RUN = True  # set False to actually download
-
 def download_mp3(song, album=None):
-    try:
-        # Resolve URL
-        url = song.get("urlCanonical") or f"https://music.youtube.com/watch?v={song.get('videoId')}"
-    except Exception as e:
-        print(f"[ERROR] URL missing: {e}, song: {song}")
-        return
+    # Resolve URL (prefer urlCanonical, fallback to videoId)
+    url = song.get("urlCanonical")
+    if not url:
+        video_id = song.get("videoId")
+        if video_id:
+            url = f"https://music.youtube.com/watch?v={video_id}"
+        else:
+            print(f"[SKIP] No valid URL for: {song.get('title', 'Unknown')}")
+            return
 
-    # Metadata
-    fallback_title = song.get("title") or "Unknown Title"
-    fallback_artist = song.get("artist") or "Unknown Artist"
-    video_details = song.get("videoDetails") or {}
-    fallback_artist = video_details.get("author") or fallback_artist
-    publishdate = song.get("publishDate") or video_details.get("publishDate")
+    # Fallback metadata from JSON
+    fallback_title = song.get("title", "Unknown Title")
+    fallback_artist = song.get("artist", "Unknown Artist")
     tags = song.get("tags") or []
+    publishdate = song.get("publishDate") 
 
-    # Sanitize
+    # Build safe target path (we will instruct yt_dlp to create final mp3 at this exact path)
     safe_title = sanitize_filename(fallback_title)
     safe_artist = sanitize_filename(fallback_artist)
-
-    
-    
     filename = f"{safe_title} - {safe_artist}.mp3"
     filepath = os.path.join(DOWNLOAD_FOLDER, filename)
 
@@ -134,7 +109,7 @@ def download_mp3(song, album=None):
             if publishdate:
                 date_only = publishdate.split("T")[0]  # "2025-05-01"
                 date_no_dash = date_only.replace("-", "")  # "20250501"
-                audio["year"] = date_no_dash
+                audio["comment"] = date_no_dash
 
 
             audio.save(v2_version=3)  # save as ID3v2.3 for broad compatibility
@@ -169,6 +144,7 @@ def main():
 
 
 if __name__ == "__main__":
-
-    validate_json()
     main()
+
+
+

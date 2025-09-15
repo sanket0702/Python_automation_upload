@@ -46,7 +46,7 @@ export async function fetchAndUpload() {
     await runPython(path.join(__dirname, "./NewReleaseUpdated/download_song.py"));
 
     // Step 3: Upload songs into DB
-    await uploadAllSongs();
+    //await uploadAllSongs();
 
     console.log(`[INFO] 🎉 Completed pipeline successfully`);
   } catch (err) {
