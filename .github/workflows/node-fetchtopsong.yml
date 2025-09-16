@@ -36,7 +36,10 @@ jobs:
       - name: Create cookies.txt
         run: echo "${{ secrets.YTM_COOKIES }}" > cookies.txt
 
-
+      - name: Generate headers_auth.json
+        run: python convert_cookies.py
+        env:
+          YTM_COOKIES: ${{ secrets.YTM_COOKIES }}
 
       - name: Create download folder
         run: mkdir -p Download_Songs

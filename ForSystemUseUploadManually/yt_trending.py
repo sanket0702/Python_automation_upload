@@ -23,8 +23,8 @@ def fetch_playlist_full_metadata(playlist_id):
     for idx, track in enumerate(playlist["tracks"], start=1):
         
         videoId = track.get("videoId")
-        #if idx>1:
-           # break
+        if idx>1:
+            break
         if not videoId:
             continue
 
