@@ -2,11 +2,10 @@ import os
 import json
 from yt_dlp import YoutubeDL
 from mutagen.easyid3 import EasyID3
-from mutagen.id3 import ID3, ID3NoHeaderError, TKEY,TDRC,COMM
+from mutagen.id3 import ID3, ID3NoHeaderError, TKEY, COMM
 import sys
 import io
-import pprint
-
+from ytmusic_utils import get_song_by_id
 
 # Ensure stdout/stderr handles UTF-8
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
@@ -18,84 +17,99 @@ os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 
 def sanitize_filename(name):
+    """Remove invalid filesystem characters."""
     if not name:
         name = "Unknown"
-    # Remove invalid characters for filesystem
     return "".join(c for c in name if c.isalnum() or c in " ._-").rstrip()
 
 
 def download_mp3(song, album=None):
+    # Construct URL
     url = song.get("urlCanonical") or (
-        f"https://music.youtube.com/watch?v={song.get('videoId')}"
-        if song.get("videoId")
-        else None
+        f"https://music.youtube.com/watch?v={song.get('videoId')}" if song.get("videoId") else None
     )
     if not url:
         print(f"[SKIP] No valid URL for: {song.get('title', 'Unknown')}")
         return
 
+    # Extract basic info
     title = song.get("title") or "Unknown Title"
-    print(f"[ERROR] Could not read TITLE= {title}: ")
     artist = song.get("artist") or "Unknown Artist"
-    print(f"[ERROR] Could not read ARTIST =={artist}: ")
     tags = song.get("tags") or []
     publishdate = song.get("publishDate")
-    print(f"[ERROR] Could not read RELEASEdATE =={publishdate}:")
     video_id = song.get("videoId")
-
+    coverUrl = song.get("coverUrl", "")
+    
     print(f"✅ Starting download: {title} | Artist: {artist} | VideoID: {video_id}")
 
-    # Output template (temporary name, will rename later)
+    # yt-dlp options
     ydl_opts = {
         "format": "bestaudio/best",
         "outtmpl": os.path.join(DOWNLOAD_FOLDER, "%(id)s.%(ext)s"),
-        "postprocessors": [
-            {
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": "mp3",
-                "preferredquality": "192",
-            }
-        ],
+        "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": "192"}],
         "cookiefile": "cookies.txt",  # must be Netscape format
         "quiet": False,
         "no_warnings": True,
     }
-    songdata=[]
+
     try:
         with YoutubeDL(ydl_opts) as ydl:
             songdata = ydl.extract_info(url, download=True)
 
+        print("\n========= Extract video info cleanly =========")
+        wanted_keys = ["id", "title", "author", "album", "thumbnail", "description",
+                       "webpage_url", "view_count", "upload_date", "categories", "tags",
+                       "publishDate", "videoDetails"]
 
-            print("\n========= PRINT WHOLE DATA =========")
+        for key in wanted_keys:
+            value = songdata.get(key)
+            if key == "id":
+                video_id = value
+        print("========= Extract video info cleanly =========\n")
 
-            pp = pprint.PrettyPrinter(indent=2, width=120, compact=False)
-            pp.pprint(songdata)
-            # Or compact key-value preview
-            print("\n========= Extracted Song Data =========")
-            wanted_keys = ["id", "title", "author", "album", "thumbnail", "description", 
-               "webpage_url", "view_count", "upload_date", "categories", "tags","publishDate"]
+        # Optional: fetch additional metadata from utils
+        song_data_ytl = get_song_by_id(video_id)
 
-            for key in wanted_keys:
-                print(f"{key}: {songdata.get(key)}")
+        ytl_keys = ["videoId", "title", "artist", "coverUrl", "description",
+                    "urlCanonical", "viewCount", "publishDate", "category", "tags"]
 
-            print("=======================================\n")
-        # File path that yt-dlp created (by video ID)
-        temp_filepath = os.path.join(DOWNLOAD_FOLDER, f"{songdata['id']}.mp3")
+        for key in ytl_keys:
+            ytl_value = song_data_ytl.get(key)
 
-        # Final safe filename
+            if key == "videoId":
+                video_id = ytl_value
+                print(f"{key}: {video_id}")
+
+            elif key == "title":
+                title = ytl_value
+                print(f"{key}: {title}")
+
+            elif key == "artist":  # ✅ fixed (was author)
+                artist = ytl_value
+                print(f"{key}: {artist}")
+
+            elif key == "tags":
+                tags = ytl_value
+                print(f"{key}: {tags}")
+
+            elif key == "publishDate":  # ✅ fixed variable name
+                publishdate = ytl_value
+                print(f"{key}: {publishdate}")
+
+        # Prepare file paths
+        temp_filepath = os.path.join(DOWNLOAD_FOLDER, f"{video_id}.mp3")
         safe_title = sanitize_filename(title)
         safe_artist = sanitize_filename(artist)
-        final_filepath = os.path.join(
-            DOWNLOAD_FOLDER, f"{safe_title} - {safe_artist}.mp3"
-        )
+        final_filepath = os.path.join(DOWNLOAD_FOLDER, f"{safe_title} - {safe_artist}.mp3")
 
+        # Rename file
         if os.path.exists(temp_filepath):
             os.rename(temp_filepath, final_filepath)
         else:
             print(f"[ERROR] Expected file not found: {temp_filepath}")
             return
 
-        # --- ID3 Tagging ---
+        # ID3 tagging
         try:
             audio = EasyID3(final_filepath)
         except ID3NoHeaderError:
@@ -104,29 +118,20 @@ def download_mp3(song, album=None):
 
         audio["title"] = title
         audio["artist"] = artist
-
         if tags:
             audio["composer"] = ", ".join(tags) if isinstance(tags, list) else str(tags)
-        
         audio.save(v2_version=3)
 
-        # Add videoId as TKEY
+        # Add videoId and release date using ID3
+        id3 = ID3(final_filepath)
         if video_id:
-            id3 = ID3(final_filepath)
             id3.add(TKEY(encoding=3, text=video_id))
-            id3.save(v2_version=3)
-
         if publishdate:
-            id3 = ID3(final_filepath)
-            date_only = publishdate.split("T")[0]  # "2025-05-01"
-            date_no_dash = date_only.replace("-", "")  # "20250501"
-            id3.add(COMM(encoding=3, lang='eng', desc='ReleasedDate', text=date_no_dash))
-            
-            #id3.add(TDRC(encoding=3, text=date_no_dash))
-            id3.save(v2_version=3)
+            date_only = publishdate.split("T")[0].replace("-", "")
+            id3.add(COMM(encoding=3, lang='eng', desc='ReleasedDate', text=date_only))
+        id3.save(v2_version=3)
 
-
-        print(f"✅ Downloaded & tagged: {final_filepath}")
+        print(f"✅ Downloaded & tagged: {final_filepath}\n")
 
     except Exception as e:
         print(f"[ERROR] Failed to download '{title}' from {url}: {e}")

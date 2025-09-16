@@ -40,7 +40,7 @@ export async function fetchAndUpload() {
     console.log(`[INFO] 🚀 Starting Fetch + Upload pipeline`);
 
     // Step 1: Run Python script 1
-    await runPython(path.join(__dirname, "./FetchTopUpdated/yt_trending.py"));
+    //await runPython(path.join(__dirname, "./FetchTopUpdated/yt_trending.py"));
 
  
 

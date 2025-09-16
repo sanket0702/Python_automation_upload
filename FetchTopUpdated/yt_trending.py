@@ -23,7 +23,7 @@ def fetch_playlist_full_metadata(playlist_id):
     for idx, track in enumerate(playlist["tracks"], start=1):
         
         videoId = track.get("videoId")
-        if idx>2:
+        if idx>1:
             break
         if not videoId:
             continue
@@ -56,7 +56,7 @@ def fetch_playlist_full_metadata(playlist_id):
 
             #"streamingData": metadata.get("streamingData"),
             #"playabilityStatus": metadata.get("playabilityStatus"),
-            #"videoDetails": metadata.get("videoDetails"),
+            "videoDetails": metadata.get("videoDetails"),
             #"microformat": metadata.get("microformat"),
             #"siteName": "YouTube Music",
             #"appName": "YouTube Music",
