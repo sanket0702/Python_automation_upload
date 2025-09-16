@@ -23,24 +23,26 @@ def sanitize_filename(name):
     return "".join(c for c in name if c.isalnum() or c in " ._-").rstrip()
 
 
-def download_mp3(song, album=None):
+def download_mp3(videoId, title, artist, coverUrl, description,
+                  urlCanonical, viewCount, publishDate, category, tags,
+                  output_folder):
     # Construct URL
-    url = song.get("urlCanonical") or (
-        f"https://music.youtube.com/watch?v={song.get('videoId')}" if song.get("videoId") else None
+    url = urlCanonical or (
+        f"https://music.youtube.com/watch?v={videoId}" if videoId else None
     )
     if not url:
-        print(f"[SKIP] No valid URL for: {song.get('title', 'Unknown')}")
+        print(f"[SKIP] No valid URL for: {title}")
         return
 
     # Extract basic info
-    title = song.get("title") or "Unknown Title"
-    artist = song.get("artist") or "Unknown Artist"
-    tags = song.get("tags") or []
-    publishdate = song.get("publishDate")
-    video_id = song.get("videoId")
-    coverUrl = song.get("coverUrl", "")
+    #title = song.get("title") or "Unknown Title"
+    #artist = song.get("artist") or "Unknown Artist"
+    ##tags = song.get("tags") or []
+    #publishdate = song.get("publishDate")
+    #video_id = song.get("videoId")
+    #coverUrl = song.get("coverUrl", "")
     
-    print(f"✅ Starting download: {title} | Artist: {artist} | VideoID: {video_id}")
+    print(f"✅ Starting download: {title} | Artist: {artist} | VideoID: {videoId}")
 
     # yt-dlp options
     ydl_opts = {
@@ -68,8 +70,8 @@ def download_mp3(song, album=None):
         print("========= Extract video info cleanly =========\n")
 
         # Optional: fetch additional metadata from utils
-        song_data_ytl = get_song_by_id(video_id)
-
+        song_data_ytl = get_song_by_id(videoId)
+        """
         ytl_keys = ["videoId", "title", "artist", "coverUrl", "description",
                     "urlCanonical", "viewCount", "publishDate", "category", "tags"]
 
@@ -95,9 +97,9 @@ def download_mp3(song, album=None):
             elif key == "publishDate":  # ✅ fixed variable name
                 publishdate = ytl_value
                 print(f"{key}: {publishdate}")
-
+        """
         # Prepare file paths
-        temp_filepath = os.path.join(DOWNLOAD_FOLDER, f"{video_id}.mp3")
+        temp_filepath = os.path.join(DOWNLOAD_FOLDER, f"{videoId}.mp3")
         safe_title = sanitize_filename(title)
         safe_artist = sanitize_filename(artist)
         final_filepath = os.path.join(DOWNLOAD_FOLDER, f"{safe_title} - {safe_artist}.mp3")
@@ -125,9 +127,9 @@ def download_mp3(song, album=None):
         # Add videoId and release date using ID3
         id3 = ID3(final_filepath)
         if video_id:
-            id3.add(TKEY(encoding=3, text=video_id))
-        if publishdate:
-            date_only = publishdate.split("T")[0].replace("-", "")
+            id3.add(TKEY(encoding=3, text=videoId))
+        if publishDate:
+            date_only = publishDate.split("T")[0].replace("-", "")
             id3.add(COMM(encoding=3, lang='eng', desc='ReleasedDate', text=date_only))
         id3.save(v2_version=3)
 
@@ -137,24 +139,65 @@ def download_mp3(song, album=None):
         print(f"[ERROR] Failed to download '{title}' from {url}: {e}")
 
 
-def main():
-    json_files = [f for f in os.listdir(DATA_FOLDER) if f.endswith(".json")]
-    if not json_files:
-        print("[INFO] No JSON files found in data/ folder.")
+def scan_and_download(tracks_file="data/tracks.json"):
+    if not os.path.exists(tracks_file):
+        print(f"[ERROR] {tracks_file} not found")
         return
 
-    for json_file in json_files:
-        filepath = os.path.join(DATA_FOLDER, json_file)
-        album_name = os.path.splitext(json_file)[0]
+    with open(tracks_file, "r", encoding="utf-8") as f:
         try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                songs = json.load(f)
+            data = json.load(f)
         except Exception as e:
-            print(f"[ERROR] Could not read {filepath}: {e}")
+            print(f"[ERROR] Failed to read {tracks_file}: {e}")
+            return
+
+    if not isinstance(data, list):
+        print(f"[ERROR] {tracks_file} does not contain a list")
+        return
+
+    output_folder = os.path.join("Download_Songs")
+    os.makedirs(output_folder, exist_ok=True)
+
+    for item in data:
+        if not isinstance(item, dict):
             continue
 
-        for song in songs:
-            download_mp3(song, album=album_name)
+        videoId = item.get("videoId")
+        title = item.get("title")
+        artist = item.get("artist")
+        coverUrl = item.get("coverUrl")
+        description = item.get("description")
+        urlCanonical = item.get("urlCanonical")
+        viewCount = item.get("viewCount")
+        publishDate = item.get("publishDate")
+        category = item.get("category")
+        tags = item.get("tags")
+
+        if not title or not artist:
+            continue
+
+        print(f"[INFO] Downloading {title} - {artist} -> {output_folder}")
+        
+        # Call your download function with all required fields
+        download_mp3(
+            videoId=videoId,
+            title=title,
+            artist=artist,
+            coverUrl=coverUrl,
+            description=description,
+            urlCanonical=urlCanonical,
+            viewCount=viewCount,
+            publishDate=publishDate,
+            category=category,
+            tags=tags,
+            output_folder=output_folder
+        )
+
+
+
+def main():
+    scan_and_download()
+    
 
 
 if __name__ == "__main__":

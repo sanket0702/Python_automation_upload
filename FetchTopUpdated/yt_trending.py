@@ -23,8 +23,8 @@ def fetch_playlist_full_metadata(playlist_id):
     for idx, track in enumerate(playlist["tracks"], start=1):
         
         videoId = track.get("videoId")
-        #if idx>1:
-           # break
+        if idx>1:
+            break
         if not videoId:
             continue
 
@@ -76,8 +76,8 @@ def fetch_playlist_full_metadata(playlist_id):
 
     # Save all songs in JSON
     os.makedirs("data", exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"data/playlist_full_{timestamp}.json"
+    #timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"data/tracks.json"
 
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(all_songs_data, f, ensure_ascii=False, indent=2)
